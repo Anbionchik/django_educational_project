@@ -444,6 +444,33 @@ body {
   justify-self: end;
 }
 
+.item-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.header__button-all-is-done {
+  justify-self: start;
+  align-self: center;
+  text-align: center;
+  vertical-align: middle;
+  width: auto;
+  padding: 0px 10px;
+  height: 40px;
+  background: #004949;
+  border-radius: 6px;
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 24px;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  cursor: pointer;
+}
+
 .header__button-create-bundle {
   grid-column-start: 3;
   align-self: center;
@@ -684,7 +711,9 @@ li {
   grid-column: 1/3;
   width: 200px;
   word-break: break-all;
-  margin-left: 50px; }
+  margin-left: 50px;
+  cursor: pointer;
+}
 
 .table-data-two_table-cell {
   word-break: break-all;

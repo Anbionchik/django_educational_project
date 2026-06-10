@@ -8,7 +8,7 @@ class ListItemForm(forms.ModelForm):
     Форма надстроек расписания обмена
     """
     name = forms.CharField(required=True, widget=forms.TextInput())
-    expiration_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    expiration_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = ListItemModel
@@ -18,4 +18,3 @@ class ListItemForm(forms.ModelForm):
                 'unique_together': "Такая задача уже существует.",
             }
         }
-

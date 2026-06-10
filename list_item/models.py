@@ -1,5 +1,5 @@
 from django.db import models
-# from django.contrib.auth.models import User
+from main.models import ListModel
 
 
 class ListItemModel(models.Model):
@@ -9,7 +9,17 @@ class ListItemModel(models.Model):
     modified = models.DateTimeField(auto_now=True)
     listmodel_id = models.ForeignKey('main.ListModel', on_delete=models.CASCADE)  # Без импорта лучше
     is_done = models.BooleanField(default=False)
-    expiration_date = models.DateTimeField()
+    expiration_date = models.DateTimeField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        obj = ListModel.objects.filter(id=self.listmodel_id_id).first()
+        if all(type(self).objects.filter(listmodel_id=self.listmodel_id).values_list('is_done', flat=True)):
+            obj.is_done = True
+            obj.save()
+        else:
+            obj.is_done = False
+            obj.save()
 
     def __str__(self):
         return self.name
