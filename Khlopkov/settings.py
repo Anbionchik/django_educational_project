@@ -81,10 +81,10 @@ WSGI_APPLICATION = 'Khlopkov.wsgi.application'
 DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": "127.0.0.1",
+        "HOST": "localhost",
         "NAME": "mytest",
         "USER": "postgres",
-        "PASSWORD": "Ankay1996",
+        "PASSWORD": "postgres",
         "PORT": 5432
     }
 }
