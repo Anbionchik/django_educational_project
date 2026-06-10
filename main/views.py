@@ -5,6 +5,7 @@ from main.forms import ListForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import Http404, HttpResponse
 
 
 @login_required(login_url='registration/login/')
@@ -90,3 +91,12 @@ def new_list_view(request):
 def logout_view(request):
     logout(request)
     return redirect('main:main')
+
+
+def delete_view(request, pk):
+    if request.method == 'POST':
+        list_item = ListModel.objects.filter(id=pk).first()
+        if list_item:
+            list_item.delete()
+            return HttpResponse(status=201)
+    return Http404

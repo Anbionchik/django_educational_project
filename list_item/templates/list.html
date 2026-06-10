@@ -14,13 +14,22 @@
             <div class="header__button-create-bundle">
                 <div class="plus_button">+</div>
             </div>
-    </a></div>
+        </a>
+        <div id="delete_all" class="header__button-delete-all">
+            <svg width="20" height="22" viewBox="0 0 20 22" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M6.99987 0H12.9999C14.1044 0 14.9999 0.89543 14.9999 2V3H18C19.1046 3 20 3.89543 20 5V7C20 8.10457 19.1046 9 18 9H17.9196L16.9997 20C16.9997 21.1046 16.1043 22 14.9997 22H4.99974C3.89517 22 2.99974 21.1046 3.00319 20.0831L2.07961 9H2C0.895431 9 0 8.10457 0 7V5C0 3.89543 0.895431 3 2 3H4.99987V2C4.99987 0.89543 5.8953 0 6.99987 0ZM4.99987 5V4.99999H1.99987V6.99999H17.9999V4.99999H14.9999V5H4.99987ZM4.99954 20L4.08603 9H15.9127L15.003 19.917L14.9995 20H4.99954ZM13.0001 1.99999V2.99999H7.00013V1.99999H13.0001Z"
+                      fill="#BBC1C7"/>
+            </svg>
+        </div>
+    </div>
 
 {% endblock %}
 
 {% block body %}
     {%  for list in lists %}
-            <div class="table-data__table-row">
+            <div id="row_{{ list.id }}" class="table-data__table-row">
                 {% if list.is_done %}
                     <div id="isDone_{{ list.id }}" class="table-row_table_cell-1 is_done_text"> {{ list.name }}</div>
                 {% else %}
@@ -47,7 +56,7 @@
                         <div class="calendarik">{{ list.expiration_date }}</div>
                     {% endif %}
                     <div class="table-row_table_icon">
-                        <a class="delete_button" href="#">
+                        <a class="delete_button" href={% url 'list_item:delete' pk=list.id %} >
                             <svg width="20" height="22" viewBox="0 0 20 22" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -94,9 +103,95 @@
 {% block js %}
 <script>
 
-const rows = document.querySelectorAll('.table-row_table_cell-1');
+const rows = Array.from(document.querySelectorAll('.table-row_table_cell-1')).filter(row => row.id);
+const body = document.getElementsByClassName('relationship__table-data')[0];
+const delButtons = document.querySelectorAll('.delete_button');
+const listId = JSON.parse('{{ list_pk|safe }}');
 
 rows.forEach(handler);
+delButtons.forEach(button => {
+    button.addEventListener('click', delFunction);
+});
+
+function deleteMessageBlock(event) {
+    event.preventDefault();
+    document.getElementById('id_new_edit_block').remove();
+}
+
+function deleteListItem(url, event) {
+    debugger
+    const pk = url.split('/').pop();
+    const rowId = `row_${pk}`;
+    deleteMessageBlock(event);
+    fetch(url, {
+        method: 'POST',
+        headers: new Headers({'X-CSRFToken': token}),
+        redirect: 'follow',
+    }).then(response => {
+        if (response.status === 201) {
+            document.getElementById(rowId).remove();
+        } else {
+            alert('Сервер не доступен');
+        }
+    })
+
+}
+
+function delFunction(event) {
+    event.preventDefault();
+    const url = event.currentTarget.href;
+    const message = createMessageBlock('Внимание', 'Вы действительно хотите удалить дело?');
+    body.appendChild(message);
+    document.getElementById(
+        'cancel_btn'
+    ).addEventListener('click', event => deleteMessageBlock(event));
+    document.getElementById('login-submit-btn').addEventListener(
+        'click', event => deleteListItem(url, event));
+}
+
+function createMessageBlock(title, text) {
+    const divBlock = document.createElement('div');
+    divBlock.className = 'wrapper__auth';
+    divBlock.id = 'id_new_edit_block';
+    divBlock.innerHTML = `<div class="auth__column_right"><div class="auth__column_right_form"><div class="auth__column_right_form__header">${ title }</div><div id="message_text"> ${ text }</div><div class="auth__column_right__form_footer"><label class="form_footer_button-submit"><input type="submit" form="auth_form" value="" style="display: none"><a id="login-submit-btn"><div class="auth__button_submit"  ><span>&#10004</span></div></a></label><label class="form_footer_button-cancel"><a href="#" id="cancel_btn"><div class="auth__button_submit" id="login-cancel-btn" ><span>&#9587</span></div></a></label></div></div></div>`;
+    return divBlock;
+}
+
+const delete_all_button = document.querySelector(".header__button-delete-all");
+delete_all_button.addEventListener("click", DeleteAllRequest);
+
+function DeleteAllRequest(event) {
+    debugger
+    const url = document.location.href.replace(`/${listId}`, '/delete_all/');
+    const message = createMessageBlock('ВНИМАНИЕ!!!', 'Вы удалите все дела в этом списке!');
+    body.appendChild(message);
+    document.getElementById(
+        'cancel_btn'
+    ).addEventListener('click', event => deleteMessageBlock(event));
+    document.getElementById('login-submit-btn').addEventListener(
+        'click', event => deleteAll(url, event));
+}
+
+function deleteAll(url, event) {
+    debugger
+    deleteMessageBlock(event);
+    const rows_for_delete = document.getElementsByClassName('table-data__table-row')
+    return fetch(url, {
+        method: 'POST',
+        headers: new Headers({'X-CSRFToken': token}),
+        redirect: 'follow',
+        body: JSON.stringify({id: listId})
+    }).then(response => {
+        if (response.status === 201) {
+            for (let i = 0; i < rows_for_delete.length;) {
+                rows_for_delete[i].remove()
+            }
+        } else {
+            alert('Сервер не доступен');
+        }
+    })
+}
+
 const token = getCookie('csrftoken');
 
 function handler(row) {
@@ -121,10 +216,6 @@ function getCookie(name) {
 function isDoneRequest(event) {
     debugger
     const id = event.target.id.split('_').pop();
-    let listId = document.location.href.split('/').pop();
-    if (listId.includes('?')) {
-        listId = listId.split('?')[0]
-    }
     const url = document.location.href.replace(`/${listId}`, '/done/');
     return fetch(url, {
         method: 'POST',
@@ -150,23 +241,25 @@ all_is_done_button.addEventListener("click", AllisDoneRequest);
 
 function AllisDoneRequest(event) {
     debugger
-    let id = document.location.href.split('/').pop();
-    if (id.includes('?')) {
-        id = id.split('?')[0]
-    }
-    const url = document.location.href.replace(`/${id}`, '/all_done/');
+    const url = document.location.href.replace(`/${listId}`, '/all_done/');
+    const isDone = rows.map(row => row.classList.contains('is_done_text'));
+    let allTrue = ! (isDone.filter(row => !row).length > 0);
+
     return fetch(url, {
         method: 'POST',
         headers: new Headers({'X-CSRFToken': token}),
         redirect: 'follow',
-        body: JSON.stringify({id: id})
+        body: JSON.stringify({id: listId, all_true: allTrue})
     }).then(response => {
         if (response.status === 201) {
-            let i;
-            for (i = 0; i < rows.length; i++) {
-                if (!rows[i].classList.contains('is_done_text')) {
-                    rows[i].classList.add('is_done_text');
-                }
+            if (allTrue) {
+                rows.forEach(row => row.classList.remove('is_done_text'));
+            } else {
+                rows.forEach(row => {
+                    if (!row.classList.contains('is_done_text')) {
+                        row.classList.add('is_done_text');
+                    }
+                })
             }
         } else {
             alert('Сервер не доступен');

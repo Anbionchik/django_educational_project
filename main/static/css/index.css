@@ -446,10 +446,10 @@ body {
 
 .item-buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
-.header__button-all-is-done {
+.header__button-all-is-done, .header__button-delete-all {
   justify-self: start;
   align-self: center;
   text-align: center;
@@ -464,11 +464,28 @@ body {
   font-weight: 600;
   font-size: 22px;
   line-height: 24px;
-  color: #FFFFFF;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+.header__button-all-is-done {
+  color: white;
+}
+
+.header__button-all-is-done:hover {
+  background-color: #f1f9ff;
+  color: dimgrey;
+}
+
+.header__button-delete-all {
+  background-color: #FD3A3A;
+}
+
+.header__button-delete-all:hover {
+  background-color: #F80000;
+  box-shadow:  0 0 10px 5px #F80000;
 }
 
 .header__button-create-bundle {
@@ -489,6 +506,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  transition: all 0.3s ease;
 }
 
 
@@ -526,7 +544,7 @@ body {
   height: 80px;
   display: grid;
   align-items: center;
-  grid-template-columns: 3fr 3fr 3fr 1fr;
+  grid-template-columns: 3fr 3fr 4fr;
   grid-template-rows: 1fr;
   background: #FFFFFF;
   border-bottom: 1px solid #FF4646; }
@@ -679,7 +697,7 @@ body {
   .table-data-two-row .table-data-two_table-icon {
     opacity: 0; }
 
-.table-data-two-row:hover {
+.table-data-two-row  {
   background-color: #f1f9ff; }
   .table-data-two-row .table-data-two_table-icon {
     opacity: 1; }

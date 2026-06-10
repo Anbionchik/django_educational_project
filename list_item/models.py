@@ -18,8 +18,9 @@ class ListItemModel(models.Model):
             obj.is_done = True
             obj.save()
         else:
-            obj.is_done = False
-            obj.save()
+            if obj.is_done:
+                obj.is_done = False
+                obj.save()
 
     def __str__(self):
         return self.name

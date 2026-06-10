@@ -18,7 +18,7 @@
 
 {% block body %}
     {%  for list in lists %}
-            <div class="table-data__table-row">
+            <div id="row_{{ list.id }}" class="table-data__table-row">
                 <div class="table-row_table_cell-1">
                     <a href="/list/{{ list.id }}">
                         {% if list.is_done %}
@@ -49,7 +49,7 @@
                         <div class="calendarik">{{ list.date }}</div>
                     {% endif %}
                     <div class="table-row_table_icon">
-                        <a class="delete_button" href="#">
+                        <a class="delete_button" href={% url 'main:delete' pk=list.id %}>
                             <svg width="20" height="22" viewBox="0 0 20 22" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -95,6 +95,75 @@
 
 {% block js %}
 <script>
+
+const body = document.getElementsByClassName('relationship__table-data')[0];
+const delButtons = document.querySelectorAll('.delete_button');
+
+delButtons.forEach(button => {
+    button.addEventListener('click', delFunction);
+});
+
+function deleteMessageBlock(event) {
+    event.preventDefault();
+    document.getElementById('id_new_edit_block').remove();
+}
+
+const token = getCookie('csrftoken');
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function deleteListItem(url, event) {
+    debugger
+    const pk = url.split('/').pop();
+    const rowId = `row_${pk}`;
+    deleteMessageBlock(event);
+    fetch(url, {
+        method: 'POST',
+        headers: new Headers({'X-CSRFToken': token}),
+        redirect: 'follow',
+    }).then(response => {
+        if (response.status === 201) {
+            document.getElementById(rowId).remove();
+        } else {
+            alert('Сервер не доступен');
+        }
+    })
+
+}
+
+function delFunction(event) {
+    event.preventDefault();
+    const url = event.currentTarget.href;
+    const message = createMessageBlock('Внимание', 'Вы действительно хотите удалить список дел?');
+    body.appendChild(message);
+    document.getElementById(
+        'cancel_btn'
+    ).addEventListener('click', event => deleteMessageBlock(event));
+    document.getElementById('login-submit-btn').addEventListener(
+        'click', event => deleteListItem(url, event));
+}
+
+function createMessageBlock(title, text) {
+    const divBlock = document.createElement('div');
+    divBlock.className = 'wrapper__auth';
+    divBlock.id = 'id_new_edit_block';
+    divBlock.innerHTML = `<div class="auth__column_right"><div class="auth__column_right_form"><div class="auth__column_right_form__header">${ title }</div><div id="message_text"> ${ text }</div><div class="auth__column_right__form_footer"><label class="form_footer_button-submit"><input type="submit" form="auth_form" value="" style="display: none"><a id="login-submit-btn"><div class="auth__button_submit"  ><span>&#10004</span></div></a></label><label class="form_footer_button-cancel"><a href="#" id="cancel_btn"><div class="auth__button_submit" id="login-cancel-btn" ><span>&#9587</span></div></a></label></div></div></div>`;
+    return divBlock;
+}
 
 </script>
 {% endblock %}
